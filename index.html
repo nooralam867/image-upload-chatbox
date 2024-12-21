@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Image Upload Chatbox</title>
+</head>
+<body>
+    <h1>Upload Images with Questions</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" id="images" name="images" multiple accept="image/*">
+        <input type="button" value="Upload" onclick="uploadImages()">
+    </form>
+    <div id="questions"></div>
+
+    <script>
+        function uploadImages() {
+            const formData = new FormData(document.getElementById('uploadForm'));
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('questions').innerHTML = data.questions.map((q, index) => `
+                    <div>
+                        <p>${q.question}</p>
+                        ${q.options.map((option, i) => `<button onclick="checkAnswer(${index}, ${i})">${option}</button>`).join('')}
+                    </div>
+                `).join('');
+            });
+        }
+
+        function checkAnswer(questionIndex, optionIndex) {
+            fetch('/check_answer', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({questionIndex, optionIndex})
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+            });
+        }
+    </script>
+</body>
+</html>
